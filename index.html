@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Alex Voxel — Developer</title>
+  <meta name="description" content="Alex Voxel — full-stack developer building fast, blocky-on-purpose software. An interactive voxel portfolio: break blocks, change the time of day, dig down through the layers.">
+  <meta name="theme-color" content="#5fa134">
+  <meta property="og:title" content="Alex Voxel — Developer">
+  <meta property="og:description" content="Dig through the layers of my portfolio. Interactive voxel world included.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%23795538'/%3E%3Crect width='16' height='5' fill='%235fa134'/%3E%3Crect y='5' x='2' width='2' height='2' fill='%235fa134'/%3E%3Crect y='5' x='9' width='3' height='1' fill='%235fa134'/%3E%3Crect x='3' y='10' width='3' height='2' fill='%23553a24'/%3E%3Crect x='10' y='9' width='3' height='3' fill='%23553a24'/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/PressStart2P.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/VT323.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#about">Skip to content</a>
+
+  <!-- ============ HUD ============ -->
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Alex Voxel — back to top">
+      <img class="brand-icon" id="brand-icon" alt="" width="32" height="32">
+      <span>&lt;alex<b>/</b>&gt;</span>
+    </a>
+    <div class="depth" aria-hidden="true">
+      <span class="depth-y">Y: <b id="depth-y">64</b></span>
+      <span class="depth-layer" id="depth-layer">Surface</span>
+    </div>
+  </header>
+
+  <nav class="hud" aria-label="Sections">
+    <div class="xp" aria-hidden="true">
+      <span class="xp-level" id="xp-level">0</span>
+      <div class="xp-bar"><i id="xp-fill"></i></div>
+    </div>
+    <ol class="hotbar" id="hotbar">
+      <li><a href="#home"     data-section="home"     data-icon="grass"    data-label="Spawn"><kbd>1</kbd></a></li>
+      <li><a href="#about"    data-section="about"    data-icon="log"      data-label="Player Profile"><kbd>2</kbd></a></li>
+      <li><a href="#skills"   data-section="skills"   data-icon="iron"     data-label="Inventory"><kbd>3</kbd></a></li>
+      <li><a href="#projects" data-section="projects" data-icon="diamond"  data-label="Quests"><kbd>4</kbd></a></li>
+      <li><a href="#journey"  data-section="journey"  data-icon="gold"     data-label="Crafting Log"><kbd>5</kbd></a></li>
+      <li><a href="#contact"  data-section="contact"  data-icon="emerald"  data-label="Chat"><kbd>6</kbd></a></li>
+    </ol>
+  </nav>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <pre class="debug" id="debug" hidden aria-hidden="true"></pre>
+  <div class="flash" id="flash" aria-hidden="true"></div>
+
+  <!-- ============ SURFACE ============ -->
+  <section class="hero" id="home" data-layer="Surface" data-y-from="64" data-y-to="64">
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <canvas id="world" role="img" aria-label="Interactive 3D voxel island with a small cabin. Drag to orbit, click to break blocks."></canvas>
+
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="blink">▮</span> Player 1 joined the game</p>
+      <h1 class="logo" aria-label="Alex Voxel">
+        <span class="logo-line">ALEX</span>
+        <span class="logo-line">VOXEL</span>
+        <em class="splash" id="splash">Hello, World!</em>
+      </h1>
+      <p class="role">I build <span class="typed" id="typed">web apps</span><span class="caret" aria-hidden="true">_</span></p>
+      <p class="lede">Full-stack developer crafting fast, blocky-on-purpose software &mdash; from rendering engines to the tools other developers live in. One commit at a time.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#projects">Start Quests</a>
+        <a class="btn" href="#contact">Open Chat</a>
+      </div>
+    </div>
+
+    <div class="tools" role="toolbar" aria-label="World controls">
+      <div class="tools-row">
+        <button class="btn btn-sm is-on" data-tool="break" aria-pressed="true">Break</button>
+        <button class="btn btn-sm" data-tool="place" aria-pressed="false">Place</button>
+        <span class="tools-sep" aria-hidden="true"></span>
+        <div class="palette" id="palette" role="group" aria-label="Block to place"></div>
+      </div>
+      <div class="tools-row">
+        <button class="btn btn-sm" data-time="sunrise">Dawn</button>
+        <button class="btn btn-sm" data-time="day">Day</button>
+        <button class="btn btn-sm" data-time="sunset">Dusk</button>
+        <button class="btn btn-sm" data-time="night">Night</button>
+        <span class="tools-sep" aria-hidden="true"></span>
+        <button class="btn btn-sm" id="btn-seed" title="Generate a new island">New World</button>
+        <button class="btn btn-sm btn-tnt" id="btn-tnt" title="Do not press"><img id="tnt-icon" alt="" width="20" height="20">TNT</button>
+      </div>
+      <p class="tools-hint"><span class="hint-desktop">Drag to orbit &middot; Click to use tool &middot; Right-click to place</span><span class="hint-touch">Drag to orbit &middot; Tap to use tool</span></p>
+    </div>
+
+    <a class="dig" href="#about" aria-label="Dig down to the next section"><span>Dig down</span><i aria-hidden="true"></i></a>
+  </section>
+
+  <div class="grass-strip" aria-hidden="true"></div>
+
+  <main>
+    <!-- ============ DIRT : ABOUT ============ -->
+    <section class="layer layer-dirt" id="about" data-layer="Dirt" data-y-from="60" data-y-to="30">
+      <div class="wrap">
+        <header class="layer-head" data-reveal>
+          <p class="layer-tag">Y = 60 &middot; Dirt</p>
+          <h2>Player Profile</h2>
+        </header>
+
+        <div class="gui about-grid" data-reveal>
+          <aside class="player">
+            <div class="avatar-frame"><canvas id="avatar" width="8" height="8" aria-label="Pixel-art portrait of Alex"></canvas></div>
+            <h3>Alex Voxel</h3>
+            <p class="muted">Level <b id="lvl">27</b> Developer</p>
+            <div class="hearts" id="hearts" aria-label="Full health"></div>
+            <ul class="facts">
+              <li><span>Class</span><b>Full-Stack Builder</b></li>
+              <li><span>Biome</span><b>Lisbon, PT</b></li>
+              <li><span>Main hand</span><b>Neovim</b></li>
+              <li><span>Off hand</span><b>Flat white</b></li>
+              <li><span>Spawn</span><b>2014</b></li>
+            </ul>
+          </aside>
+
+          <div class="about-body">
+            <h3>Hey, I'm Alex.</h3>
+            <p>I'm a software engineer who loves the moment a pile of simple blocks turns into something that feels alive. I've spent the last decade shipping products across the stack &mdash; from real-time collaborative editors to GPU-accelerated rendering and developer tooling used by thousands.</p>
+            <p>I care about <b>fast things</b>, <b>honest interfaces</b> and <b>code that the next person enjoys reading</b>. When I'm not building, I'm probably tinkering with voxel engines, home-lab automation or a new keyboard layout.</p>
+            <div class="stats" id="stats">
+              <div class="stat"><b data-count="12408">0</b><span>Commits crafted</span></div>
+              <div class="stat"><b data-count="87">0</b><span>Repos explored</span></div>
+              <div class="stat"><b data-count="11">0</b><span>Years underground</span></div>
+              <div class="stat"><b data-count="9999" data-suffix="+">0</b><span>Cups of coffee</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STONE : SKILLS ============ -->
+    <section class="layer layer-stone" id="skills" data-layer="Stone" data-y-from="30" data-y-to="0">
+      <div class="wrap">
+        <header class="layer-head" data-reveal>
+          <p class="layer-tag">Y = 30 &middot; Stone</p>
+          <h2>Inventory</h2>
+        </header>
+
+        <div class="gui inv" data-reveal>
+          <div class="inv-title"><span>Tech stack</span><span class="muted">Stack size = how long I've been mining it</span></div>
+          <div class="inv-rows" id="inventory"></div>
+          <div class="inv-title inv-title--2"><span>Hotbar</span><span class="muted">Always within reach</span></div>
+          <div class="inv-row inv-row--hotbar" id="inv-hotbar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEEPSLATE : PROJECTS ============ -->
+    <section class="layer layer-deepslate" id="projects" data-layer="Deepslate" data-y-from="0" data-y-to="-30">
+      <div class="wrap">
+        <header class="layer-head" data-reveal>
+          <p class="layer-tag">Y = -10 &middot; Deepslate</p>
+          <h2>Quests</h2>
+          <p class="layer-sub">Advancements unlocked. A few of the things I've built, broken and rebuilt.</p>
+        </header>
+
+        <div class="cards">
+          <article class="card gui" data-reveal data-icon="diamond">
+            <header><span class="card-icon"></span><div><h3>Chunkworks</h3><p class="adv">Advancement Made!</p></div></header>
+            <p>A voxel engine in Rust + WebGPU with greedy meshing, async chunk streaming and a tiny ECS. Holds 120 fps with 16&times;16&times;16 chunks out to the horizon.</p>
+            <ul class="tags"><li>Rust</li><li>WebGPU</li><li>WASM</li></ul>
+            <footer><a href="#" class="link">View repo &rarr;</a><span class="stars-count">&#9733; 2.4k</span></footer>
+          </article>
+
+          <article class="card gui" data-reveal data-icon="redstone">
+            <header><span class="card-icon"></span><div><h3>Redstone CI</h3><p class="adv">Advancement Made!</p></div></header>
+            <p>A pipeline visualiser that turns your CI workflows into live redstone-style circuit diagrams. Find the slow wire in seconds, not scrolling logs.</p>
+            <ul class="tags"><li>TypeScript</li><li>Svelte</li><li>Go</li></ul>
+            <footer><a href="#" class="link">Live demo &rarr;</a><span class="stars-count">&#9733; 1.1k</span></footer>
+          </article>
+
+          <article class="card gui" data-reveal data-icon="gold">
+            <header><span class="card-icon"></span><div><h3>Blockboard</h3><p class="adv">Advancement Made!</p></div></header>
+            <p>Real-time collaborative whiteboard built on CRDTs. Cursors, undo that actually works with multiple people, and offline-first sync that never loses a stroke.</p>
+            <ul class="tags"><li>React</li><li>CRDT</li><li>Postgres</li></ul>
+            <footer><a href="#" class="link">Case study &rarr;</a><span class="stars-count">&#9733; 860</span></footer>
+          </article>
+
+          <article class="card gui" data-reveal data-icon="emerald">
+            <header><span class="card-icon"></span><div><h3>Nether CLI</h3><p class="adv">Advancement Made!</p></div></header>
+            <p>A blazing-fast command-line toolkit for scaffolding, migrating and deploying services. Single static binary, zero config, delightful errors.</p>
+            <ul class="tags"><li>Rust</li><li>CLI</li><li>Docker</li></ul>
+            <footer><a href="#" class="link">View repo &rarr;</a><span class="stars-count">&#9733; 3.2k</span></footer>
+          </article>
+
+          <article class="card gui" data-reveal data-icon="iron">
+            <header><span class="card-icon"></span><div><h3>Pickaxe UI</h3><p class="adv">Advancement Made!</p></div></header>
+            <p>An accessible, themeable component library with a pixel-perfect token system. Ships under 9&nbsp;kB, tree-shakes to nothing and passes every audit I could throw at it.</p>
+            <ul class="tags"><li>CSS</li><li>A11y</li><li>Design tokens</li></ul>
+            <footer><a href="#" class="link">Storybook &rarr;</a><span class="stars-count">&#9733; 540</span></footer>
+          </article>
+
+          <article class="card gui" data-reveal data-icon="glow">
+            <header><span class="card-icon"></span><div><h3>Mob Farm</h3><p class="adv">Advancement Made!</p></div></header>
+            <p>My home-lab: a self-hosted automation stack that turns a rack of small machines into a quietly efficient farm &mdash; metrics, backups and one very smug dashboard.</p>
+            <ul class="tags"><li>Linux</li><li>Terraform</li><li>Grafana</li></ul>
+            <footer><a href="#" class="link">Read the write-up &rarr;</a><span class="stars-count">&#9733; 310</span></footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DEEP : EXPERIENCE ============ -->
+    <section class="layer layer-deep" id="journey" data-layer="Deep Dark" data-y-from="-30" data-y-to="-55">
+      <div class="wrap">
+        <header class="layer-head" data-reveal>
+          <p class="layer-tag">Y = -40 &middot; Deep dark</p>
+          <h2>Crafting Log</h2>
+          <p class="layer-sub">The recipes that got me here.</p>
+        </header>
+
+        <ol class="timeline">
+          <li class="tl-item" data-reveal>
+            <span class="orb" aria-hidden="true"></span>
+            <div class="gui tl-card">
+              <p class="tl-date">2023 &mdash; Now</p>
+              <h3>Staff Engineer <span class="at">@ Netherlight Studios</span></h3>
+              <ul>
+                <li>Lead the rendering platform team shipping a cross-platform engine to 4M players.</li>
+                <li>Cut cold-start time by 63% with a streaming asset pipeline.</li>
+                <li>Mentor 8 engineers; run the internal &ldquo;Redstone Guild&rdquo; guild on performance.</li>
+              </ul>
+            </div>
+          </li>
+          <li class="tl-item" data-reveal>
+            <span class="orb" aria-hidden="true"></span>
+            <div class="gui tl-card">
+              <p class="tl-date">2020 &mdash; 2023</p>
+              <h3>Senior Full-Stack Engineer <span class="at">@ Mineshaft Labs</span></h3>
+              <ul>
+                <li>Built the real-time collaboration core that grew from 0 to 600k weekly users.</li>
+                <li>Designed an event-sourced backend handling 40k writes/sec on a modest budget.</li>
+              </ul>
+            </div>
+          </li>
+          <li class="tl-item" data-reveal>
+            <span class="orb" aria-hidden="true"></span>
+            <div class="gui tl-card">
+              <p class="tl-date">2017 &mdash; 2020</p>
+              <h3>Software Engineer <span class="at">@ Bedrock &amp; Co.</span></h3>
+              <ul>
+                <li>Shipped customer-facing dashboards, design system and a very loved CLI.</li>
+                <li>Introduced testing culture: coverage from 12% to 86% without slowing anyone down.</li>
+              </ul>
+            </div>
+          </li>
+          <li class="tl-item" data-reveal>
+            <span class="orb" aria-hidden="true"></span>
+            <div class="gui tl-card">
+              <p class="tl-date">2014 &mdash; 2017</p>
+              <h3>B.Sc. Computer Science <span class="at">@ Overworld University</span></h3>
+              <ul>
+                <li>Graduated with honours; thesis on real-time voxel rendering. First commit: 2014.</li>
+              </ul>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ BEDROCK : CONTACT ============ -->
+    <section class="layer layer-bedrock" id="contact" data-layer="Bedrock" data-y-from="-55" data-y-to="-64">
+      <div class="wrap">
+        <header class="layer-head" data-reveal>
+          <p class="layer-tag">Y = -64 &middot; Bedrock</p>
+          <h2>Chat</h2>
+          <p class="layer-sub">You've dug all the way down. Say hi &mdash; I read everything.</p>
+        </header>
+
+        <div class="chat" data-reveal>
+          <div class="chat-log" id="chat-log" role="log" aria-live="polite">
+            <p><span class="c-name">&lt;Visitor&gt;</span> hey! are you open to new quests?</p>
+            <p><span class="c-name c-me">&lt;Alex&gt;</span> always. drop a message below &mdash; I reply within a day.</p>
+            <p class="c-sys">[Server] Tip: type <b>/help</b> for commands.</p>
+          </div>
+          <form class="chat-form" id="chat-form" autocomplete="off">
+            <label class="sr" for="chat-input">Message</label>
+            <input id="chat-input" type="text" maxlength="240" placeholder="Type a message, or /help" enterkeyhint="send">
+            <button class="btn btn-primary" type="submit">Send</button>
+          </form>
+        </div>
+
+        <ul class="socials" data-reveal>
+          <li><a class="btn" href="mailto:hello@example.dev">Email</a></li>
+          <li><a class="btn" href="https://github.com/" rel="noopener">GitHub</a></li>
+          <li><a class="btn" href="https://www.linkedin.com/" rel="noopener">LinkedIn</a></li>
+          <li><a class="btn" href="https://mastodon.social/" rel="me noopener">Mastodon</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lava">
+    <div class="wrap">
+      <p>Game saved &middot; &copy; <span id="year">2026</span> Alex Voxel</p>
+      <p class="muted">Hand-built with Three.js &amp; vanilla JS. No frameworks, no creepers harmed. Press <kbd>F3</kbd> for debug.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+  <noscript><p class="noscript">This page is more fun with JavaScript enabled &mdash; the 3D island, inventory and chat need it.</p></noscript>
+</body>
+</html>
